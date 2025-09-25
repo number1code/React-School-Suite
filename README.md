@@ -2,8 +2,7 @@
 
 A learning journey through the React Javacriptr framework, brought to life with visually engaging projects, modern aesthetics, and heavily-commented code.
 
-![Lesson 1 CRT Loading Screen](https://i.imgur.com/8a6B6gC.gif)
-*(Suggestion: You can replace the image link above with a screenshot or GIF of your own running project!)*
+![Lesson 1 CRT Loading Screen]
 
 ---
 
