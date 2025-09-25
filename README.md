@@ -58,7 +58,7 @@ As the projects grow in complexity, they will likely require a proper developmen
 ### 📂 Lesson Breakdown
 
 #### Lesson 1: Rendering UI with React
-*   **File:** [`L1_RenderingUI.html`](./index.html)
+*   **File:** [`L1_RenderingUI`](./first_lesson.html)
 *   **Description:** A single-page application built using React via CDN links. It demonstrates the absolute fundamentals of getting a React component onto the screen.
 *   **Aesthetic:** CRT / Retro Terminal / 80's Futurist.
 *   **Key Concepts Learned:**
