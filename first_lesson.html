@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Retro Loading</title>
+    <!-- React and ReactDOM CDNs - for quick prototyping without a build step -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - to transpile JSX in the browser (for development only) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Anime.js CDN - for simple, powerful animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        /*
+        Teacher's Comment:
+        This CSS sets up our base retro-futuristic aesthetic. We're going for a dark, high-contrast look
+        with a fixed-width font to evoke old terminals or CRT screens. The 'crt-screen' class
+        is crucial for the visual effect, using pseudo-elements and gradients to simulate
+        scanlines and screen curvature.
+        */
+        :root {
+            --text-color: #00ff00; /* Bright green for classic terminal feel */
+            --bg-color: #0d0d0d;   /* Very dark background */
+            --glow-color: #00ff00; /* Matching glow */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', monospace; /* Pixelated font */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars from CRT effect */
+            position: relative;
+        }
+
+        /*
+        Teacher's Comment:
+        This is the core of our CRT shader effect.
+        - The 'crt-screen' div acts as a container for our React app.
+        - We use 'position: relative' to allow pseudo-elements to position themselves relative to it.
+        - The 'filter: contrast(1.5) brightness(1.2)' enhances the glow.
+        - The ::before pseudo-element creates the subtle screen curvature and vignette effect.
+        - The ::after pseudo-element creates the scanlines using a repeating linear gradient.
+        */
+        .crt-screen {
+            position: relative;
+            width: 90vw;
+            height: 90vh;
+            border: 2px solid var(--text-color);
+            box-shadow: 0 0 20px var(--glow-color); /* Subtle outer glow */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden; /* Keep content inside bounds */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            filter: contrast(1.5) brightness(1.2); /* Enhance the glow and colors */
+            animation: flicker 0.15s infinite alternate; /* Subtle screen flicker */
+        }
+
+        /* Screen curvature and vignette */
+        .crt-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(0,255,0,0) 0%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.7;
+            transform: scale(1.02, 1.05) translateZ(0); /* Subtle curvature */
+        }
+
+        /* Scanlines */
+        .crt-screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; /* Horizontal and vertical lines */
+            pointer-events: none;
+            z-index: 3;
+            animation: scanlines 5s linear infinite; /* Slow moving scanlines */
+            opacity: 0.5;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.98; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes scanlines {
+            0% { background-position: 0 0, 0 0; }
+            100% { background-position: 0 100%, 0 0; } /* Move vertical lines slowly */
+        }
+
+        /* Specific styles for our React components */
+        h1.loading-title {
+            font-size: clamp(1.5em, 5vw, 3.5em); /* Responsive font size */
+            letter-spacing: 0.2em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color); /* Double glow */
+            /*
+            Teacher's Comment:
+            We add a class 'glitch' here, but the actual glitch animation will be handled by Anime.js
+            to allow for more dynamic control and timing.
+            */
+            position: relative; /* For glitch effect */
+            animation: text-flicker 2s infinite alternate;
+        }
+
+        @keyframes text-flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow:
+                    -0.01em -0.01em 0.01em var(--glow-color),
+                    0.01em 0.01em 0.01em var(--glow-color);
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+                opacity: 0.8;
+            }
+        }
+
+        .loading-message {
+            font-size: clamp(0.8em, 2vw, 1.5em);
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        /*
+        Teacher's Comment:
+        We need a retro font. Google Fonts is a great resource.
+        The 'Press Start 2P' font perfectly captures the pixelated, arcade-game look.
+        */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    </style>
+</head>
+<body>
+    <!--
+    Teacher's Comment:
+    This is the root DOM element where our React application will be mounted.
+    React takes control of everything inside this div.
+    We've wrapped it in 'crt-screen' for our visual effect.
+    -->
+    <div class="crt-screen">
+        <div id="react-root">
+            <!-- React will render its components here -->
+        </div>
+    </div>
+
+    <!--
+    Teacher's Comment:
+    We use 'text/babel' script type to tell the browser that this script contains JSX
+    and needs to be transpiled by the Babel CDN we included.
+    NEVER do this in production; it's extremely slow. For production, you'd use a build tool
+    like Webpack or Vite to transpile your JSX beforehand.
+    -->
+    <script type="text/babel">
+        // ==========================================================================
+        // Teacher's Comment: React Fundamentals - Lesson 2: Rendering UI
+        // ==========================================================================
+
+        // 1. Importing React and useState
+        // In modern React (with a build tool), you'd write:
+        // import React, { useState, useEffect } from 'react';
+        // import ReactDOM from 'react-dom/client';
+        // With CDNs, React and ReactDOM are globally available, and 'useState'
+        // is accessed directly from the 'React' object.
+        const { useState, useEffect } = React;
+
+        /*
+        Teacher's Comment:
+        2. Our First Functional Component: LoadingScreen
+        - This is a simple JavaScript function that returns JSX.
+        - Functional components are the modern way to write React components.
+        - The 'useState' Hook allows us to add state to functional components.
+          'loadingText' is our state variable, and 'setLoadingText' is the function
+          to update it. When 'setLoadingText' is called, React re-renders the component.
+        - The 'useEffect' Hook is used for side effects, like setting up timers or
+          fetching data. Here, we use it to change the loading message periodically.
+          The empty dependency array `[]` means this effect runs once after the initial render (like componentDidMount).
+          The `return clearInterval(intervalId);` is a cleanup function, crucial for preventing memory leaks.
+        */
+        function LoadingScreen() {
+            // Initial state for our loading message
+            const [loadingText, setLoadingText] = useState('SYSTEM BOOTING...');
+            const messages = [
+                'INITIALIZING NEURAL INTERFACE',
+                'CALIBRATING OPTIC SENSORS',
+                'SYNCHRONIZING DATALINKS',
+                'ESTABLISHING CONNECTION TO NEXUS',
+                'AWAITING USER INPUT...',
+                'ACCESS GRANTED. WELCOME.'
+            ];
+            let messageIndex = 0;
+
+            useEffect(() => {
+                // Change loading text every 2 seconds
+                const intervalId = setInterval(() => {
+                    messageIndex = (messageIndex + 1) % messages.length;
+                    setLoadingText(messages[messageIndex]);
+                }, 2000);
+
+                // Cleanup function: This runs when the component unmounts
+                // (e.g., if we navigate away from this screen in a larger app).
+                return () => clearInterval(intervalId);
+            }, []); // Empty dependency array: runs once on mount, cleans up on unmount
+
+            /*
+        Teacher's Comment:
+        3. Animating with Anime.js
+        - We use 'useEffect' again to integrate Anime.js. This effect runs once after
+          the component is first rendered, ensuring our 'loadingTitle' element exists.
+        - Anime.js provides a clean, declarative way to define animations.
+        - Here, we're creating a 'glitch' effect by rapidly changing the `text-shadow`
+          and `opacity` properties of the `h1` element. The 'steps' easing function
+          gives it that abrupt, digital feel.
+        */
+        useEffect(() => {
+            const glitchAnimation = anime({
+                targets: '#loadingTitle',
+                textShadow: [
+                    { value: '0 0 5px var(--glow-color)', duration: 50 },
+                    { value: '0 0 15px var(--glow-color)', duration: 50 },
+                    { value: '0 0 5px var(--glow-color)', duration: 50 },
+                    { value: '0 0 25px var(--glow-color)', duration: 50 },
+                    { value: '0 0 5px var(--glow-color)', duration: 50 }
+                ],
+                opacity: [
+                    { value: 0.8, duration: 20 },
+                    { value: 1, duration: 30 },
+                    { value: 0.7, duration: 20 },
+                    { value: 1, duration: 30 }
+                ],
+                duration: 200, // Duration of one glitch cycle
+                easing: 'steps(2)', // Abrupt changes
+                loop: true,
+                direction: 'alternate', // Go back and forth
+                delay: anime.stagger(100, {from: 'center'}) // Stagger effects slightly
+            });
+
+            // Cleanup function for Anime.js animation
+            return () => glitchAnimation.pause(); // Pause the animation when component unmounts
+        }, []); // Run once after initial render
+
+            /*
+            Teacher's Comment:
+            4. JSX - JavaScript XML
+            - This looks like HTML inside JavaScript, but it's not. It's JSX!
+            - React's Babel transpiler converts this JSX into `React.createElement()` calls.
+            - We can embed JavaScript expressions within JSX using curly braces `{}`.
+              Here, `{loadingText}` dynamically displays the current state.
+            - `className` is used instead of `class` because `class` is a reserved keyword in JavaScript.
+            */
+            return (
+                <div className="loading-container">
+                    <h1 className="loading-title" id="loadingTitle">UDACITY REACT</h1>
+                    <p className="loading-message">{loadingText}</p>
+                </div>
+            );
+        }
+
+        
+
+        /*
+        Teacher's Comment:
+        5. Rendering the Component to the DOM
+        - ReactDOM.createRoot() is the modern way to mount your React app (React 18+).
+        - It creates a "root" to the DOM node, which React will manage.
+        - .render() then takes your main component (<LoadingScreen />) and renders it
+          inside the specified root element (`#react-root`).
+        - The `<LoadingScreen />` syntax is how you "instantiate" a React component.
+        */
+        const root = ReactDOM.createRoot(document.getElementById('react-root'));
+        root.render(<LoadingScreen />);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+React Fundamentals
+
+Lesson 1: Why React
+
+Before we start building, let's understand why React became so popular and what problems it solves.
+
+Teacher's Notes:
+
+The Problem with Vanilla JavaScript: Historically, building complex interactive user interfaces with vanilla JavaScript could get messy quickly. Direct DOM manipulation often led to what's known as "spaghetti code" – hard to read, hard to maintain, and prone to bugs, especially as applications grew. Updating the UI efficiently was also a challenge.
+The Rise of Component-Based Architecture: React popularized the idea of breaking down the UI into small, independent, reusable pieces called components. Think of it like building with LEGOs. Each component has its own logic and UI, making it easier to manage complexity.
+Declarative vs. Imperative:
+Imperative (Vanilla JS): You tell the browser how to do something step-by-step (e.g., "find this element, change its text, add this class").
+Declarative (React): You tell React what you want the UI to look like based on your data, and React figures out the most efficient way to make that happen. This makes your code more predictable and easier to reason about.
+The Virtual DOM: This is a core concept. Instead of directly manipulating the browser's DOM (which can be slow), React creates a lightweight "virtual" representation of the DOM in memory. When your component's state changes, React first updates this virtual DOM, then efficiently compares it to the previous virtual DOM, calculates the minimal changes needed, and then updates the real browser DOM. This process, called "reconciliation," is incredibly fast.
+One-Way Data Flow (Unidirectional): React generally promotes a one-way data flow (parent to child components). This makes it easier to track where data is coming from and how it's being updated, reducing side effects and bugs.
+JavaScript XML (JSX): This is a syntax extension for JavaScript, recommended by React, that allows you to write HTML-like code directly within your JavaScript. It might look odd at first, but it makes component definitions much more intuitive by keeping rendering logic and UI together.
+Key Takeaways for "Why React":
+React simplifies UI development by:
+Encouraging a component-based approach.
+Using a declarative style, focusing on what the UI should be.
+Optimizing UI updates with the Virtual DOM.
+Improving predictability with one-way data flow.
+Making UI definitions intuitive with JSX.
+Lesson 2: Rendering UI with React (Single-Page HTML Sample Project)
+Now that we understand the "why," let's build our very first React UI! We'll create a single HTML file with inline React, simulating a retro-futuristic, CRT-inspired "Loading Screen" that dynamically changes text and uses a subtle animation.
+This project will demonstrate:
+Setting up React and ReactDOM via CDNs.
+Creating a simple functional component.
+Using JSX to define UI elements.
+Rendering a component to the DOM.
+Introducing a basic state with useState to make content dynamic.
+Implementing CSS for our retro aesthetic, including a CRT shader effect.
+Integrating a subtle animation with Anime.js.
