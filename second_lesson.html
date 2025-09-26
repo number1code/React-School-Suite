@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Weather Dashboard - Frutiger Aero</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        /*
+        Teacher's Comment:
+        This CSS establishes our Frutiger Aero aesthetic. Key elements are:
+        - Gradients to create depth and a 'glossy' feel.
+        - `border-radius` for soft, rounded corners.
+        - `box-shadow` for a subtle 'pop-out' effect.
+        - A nature-inspired background (a simple blue/green gradient here).
+        - Use of a clean, sans-serif font like Arial or Helvetica.
+        */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #72c1f2 0%, #a8e063 100%); /* Sky blue to grass green */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #dashboard-container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .dashboard-header {
+            background-color: rgba(255, 255, 255, 0.4);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px); /* Glassmorphism effect */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .refresh-button {
+            margin-top: 15px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f1f1 100%);
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.8);
+            transition: all 0.2s ease;
+        }
+
+        .refresh-button:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.8);
+            transform: translateY(-2px);
+        }
+        
+        .refresh-button:active {
+            transform: translateY(0px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15), inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        /*
+        Teacher's Comment:
+        This is our reusable 'WeatherCard' component's style. The `backdrop-filter`
+        creates the blurry, translucent "glass" effect, a hallmark of this design style.
+        The inner radial gradient gives it a subtle 'aqua' bubble look.
+        */
+        .weather-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #1a3b58;
+            position: relative;
+            overflow: hidden; /* Important for the gloss effect */
+        }
+        
+        .weather-card::after {
+             content: '';
+             position: absolute;
+             top: -110%;
+             left: -210%;
+             width: 200%;
+             height: 200%;
+             opacity: 0;
+             transform: rotate(30deg);
+             background: rgba(255, 255, 255, 0.13);
+             background: linear-gradient( to right, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.13) 77%, rgba(255, 255, 255, 0.5) 92%, rgba(255, 255, 255, 0.0) 100% );
+        }
+        
+        .weather-card:hover::after {
+            opacity: 1;
+            top: -30%;
+            left: -30%;
+            transition-property: left, top, opacity;
+            transition-duration: 0.7s, 0.7s, 0.15s;
+            transition-timing-function: ease;
+        }
+        
+
+        .card-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        .card-header p {
+            margin: 0;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        .temperature {
+            font-size: 64px;
+            font-weight: 300;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="react-root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // ==========================================================================
+        // Teacher's Comment: 1. The "Dumb" Child Component: WeatherCard
+        // ==========================================================================
+        /*
+        This component knows nothing about where its data comes from. It's only
+        job is to receive 'props' and display them. This makes it highly reusable.
+        We are destructuring the props object `{ city, condition, temp }` directly
+        in the function signature for cleaner code. This is equivalent to writing
+        `function WeatherCard(props)` and then using `props.city`, `props.condition`, etc.
+        */
+        function WeatherCard({ city, condition, temp }) {
+            return (
+                <div className="weather-card">
+                    <div className="card-header">
+                        <h2>{city}</h2>
+                        <p>{condition}</p>
+                    </div>
+                    <div className="temperature">
+                        {temp}°
+                    </div>
+                </div>
+            );
+        }
+
+        // ==========================================================================
+        // Teacher's Comment: 2. The "Smart" Parent Component: WeatherDashboard
+        // ==========================================================================
+        /*
+        This component "owns" the data. It uses the `useState` hook to manage an
+        array of location data. This is our "single source of truth".
+        */
+        function WeatherDashboard() {
+            const [locations, setLocations] = useState([
+                { id: 1, city: 'Aero Valley', condition: 'Clear Skies', temp: 24 },
+                { id: 2, city: 'Glossy Bay', condition: 'Partly Cloudy', temp: 19 },
+                { id: 3, city: 'Aqua Mountains', condition: 'Light Rain', temp: 15 }
+            ]);
+
+            /*
+            Teacher's Comment: 3. Managing State Changes
+            This function is responsible for updating the state. It creates a *new*
+            array with updated temperatures. In React, you should treat state as
+            immutable. Instead of modifying the existing array, we create a new one
+            using `.map()`. This ensures React detects the change and triggers a re-render.
+            */
+            const handleRefresh = () => {
+                // Animate the refresh button
+                anime({
+                    targets: '.refresh-button',
+                    scale: [1, 0.9, 1],
+                    duration: 300,
+                    easing: 'easeInOutSine'
+                });
+                
+                // Update the state with new "random" temperatures
+                const refreshedLocations = locations.map(loc => ({
+                    ...loc, // Spread operator copies existing properties
+                    temp: loc.temp + (Math.floor(Math.random() * 6) - 3) // Change temp by -3 to +2
+                }));
+                setLocations(refreshedLocations);
+            };
+
+            // Animate cards on initial load
+            useEffect(() => {
+                anime({
+                    targets: '.weather-card',
+                    translateY: [50, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100) // 100ms delay between each card
+                });
+            }, []); // Empty array means this runs once after mount
+
+            /*
+            Teacher's Comment: 4. Passing State Down as Props
+            We use `.map()` to loop over our `locations` state array. For each
+            `location` object in the array, we render a `<WeatherCard />` component.
+            - `key={location.id}`: This is crucial for React. It helps React identify
+              which items have changed, are added, or are removed, optimizing performance.
+              Keys should be stable and unique among siblings.
+            - `{...location}`: This is the "spread syntax". It's a clean shortcut for
+              passing all properties of the `location` object as individual props.
+              It's equivalent to writing:
+              `city={location.city} condition={location.condition} temp={location.temp}`
+            - `onClick={handleRefresh}` is passed to the button. When clicked, it calls
+              our state-updating function.
+            */
+            return (
+                <div id="dashboard-container">
+                    <div className="dashboard-header">
+                        <h1>AeroWeather™</h1>
+                        <button className="refresh-button" onClick={handleRefresh}>
+                            Refresh Data
+                        </button>
+                    </div>
+                    <div className="weather-grid">
+                        {locations.map(location => (
+                            <WeatherCard
+                                key={location.id}
+                                {...location}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('react-root'));
+        root.render(<WeatherDashboard />);
+    </script>
+</body>
+</html>
