@@ -70,3 +70,18 @@ As the projects grow in complexity, they will likely require a proper developmen
     *   Using the `useEffect` Hook for side effects (like setting intervals and starting animations).
     *   Properly cleaning up side effects to prevent memory leaks.
     *   Integrating a third-party library (Anime.js) within a React component's lifecycle.
+### Lesson 2: State Management
+*   **File:** second_lesson.html
+*   **Description:** A mock weather dashboard that demonstrates the core principles of React state management. A "smart" parent component holds the application's data and passes it down to multiple "dumb," reusable child components.
+*   **Aesthetic:** Frutiger Aero (Glossy, skeuomorphic, optimistic UI from the mid-2000s).
+*   **Key Concepts Learned:**
+    *  The critical difference between State (managed within a component) and Props (passed into a component).
+    *  Creating a parent component (WeatherDashboard) that owns the "single source of truth" for the application's data.
+    *  Creating a reusable child component (WeatherCard) that purely displays data received via props.
+    *  "Lifting State Up": The practice of storing and managing state in the closest common ancestor component.
+    *  Passing data and functions from parent to child via props.
+    *  Rendering a dynamic list of components from an array using .map().
+    *  The importance of the unique key prop for list rendering optimization.
+    *  Handling user events (onClick) to trigger state updates in the parent component.
+    *  State Immutability: Updating state by creating new arrays/objects (.map(), spread syntax) rather than modifying the existing ones.
+    *  Using the prop spread syntax ({...location}) for cleaner prop passing.
