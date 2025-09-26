@@ -31,3 +31,4 @@ Rendering a component to the DOM.
 Introducing a basic state with useState to make content dynamic.
 Implementing CSS for our retro aesthetic, including a CRT shader effect.
 Integrating a subtle animation with Anime.js.
+
